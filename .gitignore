@@ -1,0 +1,16 @@
+.terraform/
+*.tfstate*
+*.tfplan
+terraform.tfvars
+*.tfvars.json
+*.tfvars.backup
+*key.json
+.env
+.local/
+*.retry
+__pycache__/
+ansible/inventory.ini
+ansible/group_vars/gfs.yml
+ansible/group_vars/iscsi.yml
+ansible/group_vars/storage.yml
+.tools/

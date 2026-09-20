@@ -1,0 +1,13 @@
+defaults {
+    find_multipaths yes
+    user_friendly_names no
+}
+blacklist {
+    devnode "^(ram|raw|loop|fd|md|sr)[0-9]*"
+}
+multipaths {
+    multipath {
+        wwid {{ otus_lun_wwid }}
+        alias otus_lun
+    }
+}

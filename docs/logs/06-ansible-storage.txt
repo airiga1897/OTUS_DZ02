@@ -1,0 +1,100 @@
+Warning: Permanently added '89.169.142.50' (ED25519) to the list of known hosts.
+
+playbook: site.yml
+gfs1 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+iscsi | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+gfs2 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+gfs3 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+
+PLAY [Подготовить iSCSI сервер] ************************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [iscsi]
+
+TASK [iscsi_server : Установить пакеты сервера] ********************************
+changed: [iscsi]
+
+TASK [iscsi_server : Проверить точный набор дисков RAID] ***********************
+ok: [iscsi] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [iscsi_server : Проверить существующий массив] ****************************
+ok: [iscsi]
+
+TASK [iscsi_server : Остановиться при несовместимом существующем массиве] ******
+skipping: [iscsi]
+
+TASK [iscsi_server : Проверить метаданные первого диска перед созданием массива] ***
+ok: [iscsi]
+
+TASK [iscsi_server : Проверить метаданные второго диска перед созданием массива] ***
+ok: [iscsi]
+
+TASK [iscsi_server : Остановиться, если на дисках найден прежний массив] *******
+ok: [iscsi] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [iscsi_server : Проверить другие сигнатуры на дисках] *********************
+ok: [iscsi] => (item=/dev/disk/by-id/virtio-<resource-id>)
+ok: [iscsi] => (item=/dev/disk/by-id/virtio-<resource-id>)
+
+TASK [iscsi_server : Остановиться при существующей разметке или файловой системе] ***
+ok: [iscsi] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [iscsi_server : Создать RAID1 из двух активных дисков] ********************
+changed: [iscsi]
+
+TASK [iscsi_server : Проверить существующий PV] ********************************
+ok: [iscsi]
+
+TASK [iscsi_server : Создать PV на RAID] ***************************************
+changed: [iscsi]
+
+TASK [iscsi_server : Создать VG] ***********************************************
+changed: [iscsi]
+
+TASK [iscsi_server : Создать LV для общего LUN] ********************************
+changed: [iscsi]
+
+TASK [iscsi_server : Разрешить форвардинг iSCSI target] ************************
+changed: [iscsi]
+
+TASK [iscsi_server : Настроить один LUN через два портала] *********************
+changed: [iscsi]
+
+PLAY [Подготовить узлы GFS2] ***************************************************
+skipping: no hosts matched
+
+PLAY RECAP *********************************************************************
+iscsi                      : ok=16   changed=7    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0

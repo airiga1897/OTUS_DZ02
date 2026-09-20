@@ -1,0 +1,12 @@
+---
+- name: Подготовить iSCSI сервер
+  hosts: storage
+  become: true
+  roles:
+    - iscsi_server
+
+- name: Подготовить узлы GFS2
+  hosts: gfs
+  become: true
+  roles:
+    - gfs_node

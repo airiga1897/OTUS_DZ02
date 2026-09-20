@@ -1,0 +1,23 @@
+---
+- name: Проверить совместную работу GFS2
+  hosts: gfs
+  become: true
+  tasks:
+    - name: Проверить монтирование
+      ansible.builtin.command: mountpoint -q /srv/gfs2
+      changed_when: false
+
+    - name: Записать файл текущего узла
+      ansible.builtin.copy:
+        content: "Файл создан на {{ inventory_hostname }}\n"
+        dest: "/srv/gfs2/from-{{ inventory_hostname }}.txt"
+        mode: "0644"
+
+    - name: Прочитать файлы всех узлов
+      ansible.builtin.command: "cat /srv/gfs2/from-gfs1.txt /srv/gfs2/from-gfs2.txt /srv/gfs2/from-gfs3.txt"
+      register: otus_shared_files
+      changed_when: false
+
+    - name: Показать результат
+      ansible.builtin.debug:
+        var: otus_shared_files.stdout_lines

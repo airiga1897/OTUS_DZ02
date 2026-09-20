@@ -1,0 +1,243 @@
+Warning: Permanently added '89.169.142.50' (ED25519) to the list of known hosts.
+=== RAID1 ===
+iscsi | CHANGED | rc=0 >>
+md127 : active raid1 vdc[1] vdb[0]
+      8379392 blocks super 1.2 [2/2] [UU]
+      [===========>.........]  resync = 56.9% (4770496/8379392) finish=3.2min speed=18576K/sec
+
+unused devices: <none>
+/dev/md/otus:
+           Version : 1.2
+     Creation Time : Sun Sep 20 20:07:51 2026
+        Raid Level : raid1
+        Array Size : 8379392 (7.99 GiB 8.58 GB)
+     Used Dev Size : 8379392 (7.99 GiB 8.58 GB)
+      Raid Devices : 2
+     Total Devices : 2
+       Persistence : Superblock is persistent
+
+       Update Time : Sun Sep 20 20:11:43 2026
+             State : clean, resyncing
+    Active Devices : 2
+   Working Devices : 2
+    Failed Devices : 0
+     Spare Devices : 0
+
+Consistency Policy : resync
+
+     Resync Status : 56% complete
+
+              Name : iscsi:otus  (local to host iscsi)
+              UUID : <raid-uuid>
+            Events : 33
+
+    Number   Major   Minor   RaidDevice State
+       0     253       16        0      active sync   /dev/vdb
+       1     253       32        1      active sync   /dev/vdc
+=== iSCSI target ===
+iscsi | CHANGED | rc=0 >>
+o- / ......................................................................................................................... [...]
+  o- backstores .............................................................................................................. [...]
+  | o- block .................................................................................................. [Storage Objects: 1]
+  | | o- otus_lun ............................................................ [/dev/vg_target/lv_lun (8.0GiB) write-thru activated]
+  | |   o- alua ................................................................................................... [ALUA Groups: 1]
+  | |     o- default_tg_pt_gp ....................................................................... [ALUA state: Active/optimized]
+  | o- fileio ................................................................................................. [Storage Objects: 0]
+  | o- pscsi .................................................................................................. [Storage Objects: 0]
+  | o- ramdisk ................................................................................................ [Storage Objects: 0]
+  o- iscsi ............................................................................................................ [Targets: 1]
+  | o- iqn.2026-09.local.otus:dz02.storage ............................................................................... [TPGs: 1]
+  |   o- tpg1 .................................................................................................. [gen-acls, no-auth]
+  |     o- acls .......................................................................................................... [ACLs: 0]
+  |     o- luns .......................................................................................................... [LUNs: 1]
+  |     | o- lun0 ...................................................... [block/otus_lun (/dev/vg_target/lv_lun) (default_tg_pt_gp)]
+  |     o- portals .................................................................................................... [Portals: 2]
+  |       o- 10.92.30.10:3260 ................................................................................................. [OK]
+  |       o- 10.92.40.10:3260 ................................................................................................. [OK]
+  o- loopback ......................................................................................................... [Targets: 0]
+  o- vhost ............................................................................................................ [Targets: 0]
+=== multipath ===
+gfs3 | CHANGED | rc=0 >>
+otus_lun (360014053b97e2683b124ee1a34879f2e) dm-0 LIO-ORG,otus_lun
+size=8.0G features='1 queue_if_no_path' hwhandler='1 alua' wp=rw
+`-+- policy='service-time 0' prio=50 status=active
+  |- 0:0:0:0 sda 8:0  active ready running
+  `- 1:0:0:0 sdb 8:16 active ready running
+gfs1 | CHANGED | rc=0 >>
+otus_lun (360014053b97e2683b124ee1a34879f2e) dm-0 LIO-ORG,otus_lun
+size=8.0G features='1 queue_if_no_path' hwhandler='1 alua' wp=rw
+`-+- policy='service-time 0' prio=50 status=active
+  |- 0:0:0:0 sda 8:0  active ready running
+  `- 1:0:0:0 sdb 8:16 active ready running
+gfs2 | CHANGED | rc=0 >>
+otus_lun (360014053b97e2683b124ee1a34879f2e) dm-0 LIO-ORG,otus_lun
+size=8.0G features='1 queue_if_no_path' hwhandler='1 alua' wp=rw
+`-+- policy='service-time 0' prio=50 status=active
+  |- 0:0:0:0 sda 8:0  active ready running
+  `- 1:0:0:0 sdb 8:16 active ready running
+=== quorum ===
+gfs2 | CHANGED | rc=0 >>
+Quorum information
+------------------
+Date:             Sun Sep 20 20:11:49 2026
+Quorum provider:  corosync_votequorum
+Nodes:            3
+Node ID:          2
+Ring ID:          1.9
+Quorate:          Yes
+
+Votequorum information
+----------------------
+Expected votes:   3
+Highest expected: 3
+Total votes:      3
+Quorum:           2
+Flags:            Quorate
+
+Membership information
+----------------------
+    Nodeid      Votes Name
+         1          1 gfs1
+         2          1 gfs2 (local)
+         3          1 gfs3
+gfs3 | CHANGED | rc=0 >>
+Quorum information
+------------------
+Date:             Sun Sep 20 20:11:49 2026
+Quorum provider:  corosync_votequorum
+Nodes:            3
+Node ID:          3
+Ring ID:          1.9
+Quorate:          Yes
+
+Votequorum information
+----------------------
+Expected votes:   3
+Highest expected: 3
+Total votes:      3
+Quorum:           2
+Flags:            Quorate
+
+Membership information
+----------------------
+    Nodeid      Votes Name
+         1          1 gfs1
+         2          1 gfs2
+         3          1 gfs3 (local)
+gfs1 | CHANGED | rc=0 >>
+Quorum information
+------------------
+Date:             Sun Sep 20 20:11:49 2026
+Quorum provider:  corosync_votequorum
+Nodes:            3
+Node ID:          1
+Ring ID:          1.9
+Quorate:          Yes
+
+Votequorum information
+----------------------
+Expected votes:   3
+Highest expected: 3
+Total votes:      3
+Quorum:           2
+Flags:            Quorate
+
+Membership information
+----------------------
+    Nodeid      Votes Name
+         1          1 gfs1 (local)
+         2          1 gfs2
+         3          1 gfs3
+=== DLM ===
+gfs2 | CHANGED | rc=0 >>
+dlm lockspaces
+name          gfs
+id            0x3df8322a
+flags         0x00000000
+change        member 3 joined 1 remove 0 failed 0 seq 1,1
+members       1 2 3
+
+name          lvm_vg_gfs
+id            0xe72e8a3b
+flags         0x00000000
+change        member 3 joined 1 remove 0 failed 0 seq 1,1
+members       1 2 3
+
+name          lvm_global
+id            0x12aabd2d
+flags         0x00000000
+change        member 3 joined 1 remove 0 failed 0 seq 1,1
+members       1 2 3
+gfs3 | CHANGED | rc=0 >>
+dlm lockspaces
+name          gfs
+id            0x3df8322a
+flags         0x00000000
+change        member 3 joined 1 remove 0 failed 0 seq 2,2
+members       1 2 3
+
+name          lvm_vg_gfs
+id            0xe72e8a3b
+flags         0x00000000
+change        member 3 joined 1 remove 0 failed 0 seq 2,2
+members       1 2 3
+
+name          lvm_global
+id            0x12aabd2d
+flags         0x00000000
+change        member 3 joined 1 remove 0 failed 0 seq 2,2
+members       1 2 3
+gfs1 | CHANGED | rc=0 >>
+dlm lockspaces
+name          gfs
+id            0x3df8322a
+flags         0x00000000
+change        member 3 joined 1 remove 0 failed 0 seq 3,3
+members       1 2 3
+
+name          lvm_vg_gfs
+id            0xe72e8a3b
+flags         0x00000000
+change        member 3 joined 1 remove 0 failed 0 seq 3,3
+members       1 2 3
+
+name          lvm_global
+id            0x12aabd2d
+flags         0x00000000
+change        member 3 joined 1 remove 0 failed 0 seq 3,3
+members       1 2 3
+=== shared LVM ===
+gfs1 | CHANGED | rc=0 >>
+  PV                   VG     Fmt  Attr PSize PFree
+  /dev/mapper/otus_lun vg_gfs lvm2 a--  7.98g    0
+  VG     #PV #LV #SN Attr   VSize VFree
+  vg_gfs   1   1   0 wz--ns 7.98g    0
+  LV     VG     Attr       LSize Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  lv_gfs vg_gfs -wi-ao---- 7.98g
+gfs3 | CHANGED | rc=0 >>
+  PV                   VG     Fmt  Attr PSize PFree
+  /dev/mapper/otus_lun vg_gfs lvm2 a--  7.98g    0
+  VG     #PV #LV #SN Attr   VSize VFree
+  vg_gfs   1   1   0 wz--ns 7.98g    0
+  LV     VG     Attr       LSize Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  lv_gfs vg_gfs -wi-ao---- 7.98g
+gfs2 | CHANGED | rc=0 >>
+  PV                   VG     Fmt  Attr PSize PFree
+  /dev/mapper/otus_lun vg_gfs lvm2 a--  7.98g    0
+  VG     #PV #LV #SN Attr   VSize VFree
+  vg_gfs   1   1   0 wz--ns 7.98g    0
+  LV     VG     Attr       LSize Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  lv_gfs vg_gfs -wi-ao---- 7.98g
+=== GFS2 mount ===
+gfs2 | CHANGED | rc=0 >>
+/dev/mapper/vg_gfs-lv_gfs on /srv/gfs2 type gfs2 (rw,noatime,rgrplvb)
+Filesystem                 Size  Used Avail Use% Mounted on
+/dev/mapper/vg_gfs-lv_gfs  8.0G  100M  7.9G   2% /srv/gfs2
+gfs1 | CHANGED | rc=0 >>
+/dev/mapper/vg_gfs-lv_gfs on /srv/gfs2 type gfs2 (rw,noatime,rgrplvb)
+Filesystem                 Size  Used Avail Use% Mounted on
+/dev/mapper/vg_gfs-lv_gfs  8.0G  100M  7.9G   2% /srv/gfs2
+gfs3 | CHANGED | rc=0 >>
+/dev/mapper/vg_gfs-lv_gfs on /srv/gfs2 type gfs2 (rw,noatime,rgrplvb)
+Filesystem                 Size  Used Avail Use% Mounted on
+/dev/mapper/vg_gfs-lv_gfs  8.0G  100M  7.9G   2% /srv/gfs2

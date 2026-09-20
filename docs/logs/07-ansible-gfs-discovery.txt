@@ -1,0 +1,145 @@
+Warning: Permanently added '89.169.142.50' (ED25519) to the list of known hosts.
+
+PLAY [Подготовить iSCSI сервер] ************************************************
+skipping: no hosts matched
+
+PLAY [Подготовить узлы GFS2] ***************************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [gfs1]
+ok: [gfs2]
+ok: [gfs3]
+
+TASK [gfs_node : Установить пакеты общего хранилища и кластера] ****************
+changed: [gfs1]
+changed: [gfs2]
+changed: [gfs3]
+
+TASK [gfs_node : Настроить multipath для проверенного WWID] ********************
+skipping: [gfs1]
+skipping: [gfs2]
+skipping: [gfs3]
+
+TASK [gfs_node : Включить multipathd] ******************************************
+ok: [gfs2]
+ok: [gfs1]
+ok: [gfs3]
+
+TASK [gfs_node : Применить конфигурацию multipath] *****************************
+skipping: [gfs1]
+skipping: [gfs2]
+skipping: [gfs3]
+
+TASK [gfs_node : Обнаружить портал iSCSI A] ************************************
+ok: [gfs3]
+ok: [gfs1]
+ok: [gfs2]
+
+TASK [gfs_node : Обнаружить портал iSCSI B] ************************************
+ok: [gfs3]
+ok: [gfs2]
+ok: [gfs1]
+
+TASK [gfs_node : Проверить действующие iSCSI сеансы] ***************************
+ok: [gfs2]
+ok: [gfs3]
+ok: [gfs1]
+
+TASK [gfs_node : Подключить оба портала одного target] *************************
+changed: [gfs2] => (item=10.92.30.10)
+changed: [gfs1] => (item=10.92.30.10)
+changed: [gfs3] => (item=10.92.30.10)
+changed: [gfs2] => (item=10.92.40.10)
+changed: [gfs1] => (item=10.92.40.10)
+changed: [gfs3] => (item=10.92.40.10)
+
+TASK [gfs_node : Восстанавливать iSCSI сеансы после загрузки] ******************
+ok: [gfs1]
+ok: [gfs3]
+ok: [gfs2]
+
+TASK [gfs_node : Настроить кластерную блокировку LVM] **************************
+skipping: [gfs1]
+skipping: [gfs2]
+skipping: [gfs3]
+
+TASK [gfs_node : Установить конфигурацию Corosync] *****************************
+skipping: [gfs1]
+skipping: [gfs3]
+skipping: [gfs2]
+
+TASK [gfs_node : Создать ключ Corosync на первом узле] *************************
+skipping: [gfs1]
+
+TASK [gfs_node : Прочитать ключ Corosync] **************************************
+skipping: [gfs1]
+
+TASK [gfs_node : Распространить ключ Corosync] *********************************
+skipping: [gfs1]
+skipping: [gfs2]
+skipping: [gfs3]
+
+TASK [gfs_node : Применить конфигурацию Corosync] ******************************
+skipping: [gfs1]
+
+TASK [gfs_node : Применить конфигурацию Corosync] ******************************
+skipping: [gfs2]
+
+TASK [gfs_node : Применить конфигурацию Corosync] ******************************
+skipping: [gfs3]
+
+TASK [gfs_node : Запустить Corosync] *******************************************
+skipping: [gfs1]
+skipping: [gfs2]
+skipping: [gfs3]
+
+TASK [gfs_node : Дождаться кворума из трёх узлов] ******************************
+skipping: [gfs1]
+skipping: [gfs2]
+skipping: [gfs3]
+
+TASK [gfs_node : Запустить DLM] ************************************************
+skipping: [gfs1]
+skipping: [gfs2]
+skipping: [gfs3]
+
+TASK [gfs_node : Запустить lvmlockd] *******************************************
+skipping: [gfs1]
+skipping: [gfs2]
+skipping: [gfs3]
+
+TASK [gfs_node : Создать каталог GFS2] *****************************************
+skipping: [gfs1]
+skipping: [gfs2]
+skipping: [gfs3]
+
+TASK [gfs_node : Проверить shared VG] ******************************************
+skipping: [gfs1]
+
+TASK [gfs_node : Создать shared LVM и GFS2 один раз] ***************************
+skipping: [gfs1]
+
+TASK [gfs_node : Запустить блокировку shared VG] *******************************
+skipping: [gfs1]
+skipping: [gfs2]
+skipping: [gfs3]
+
+TASK [gfs_node : Активировать общий LV] ****************************************
+skipping: [gfs1]
+skipping: [gfs2]
+skipping: [gfs3]
+
+TASK [gfs_node : Проверить точку монтирования] *********************************
+skipping: [gfs1]
+skipping: [gfs2]
+skipping: [gfs3]
+
+TASK [gfs_node : Смонтировать GFS2] ********************************************
+skipping: [gfs1]
+skipping: [gfs2]
+skipping: [gfs3]
+
+PLAY RECAP *********************************************************************
+gfs1                       : ok=8    changed=2    unreachable=0    failed=0    skipped=18   rescued=0    ignored=0
+gfs2                       : ok=8    changed=2    unreachable=0    failed=0    skipped=14   rescued=0    ignored=0
+gfs3                       : ok=8    changed=2    unreachable=0    failed=0    skipped=14   rescued=0    ignored=0

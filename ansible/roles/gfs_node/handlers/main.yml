@@ -1,0 +1,8 @@
+---
+- name: Обновить initramfs
+  ansible.builtin.command: update-initramfs -u
+
+- name: Перезапустить corosync
+  ansible.builtin.systemd:
+    name: corosync
+    state: restarted
