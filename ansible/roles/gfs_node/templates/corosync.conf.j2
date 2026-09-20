@@ -1,0 +1,23 @@
+totem {
+  version: 2
+  cluster_name: otus
+  transport: knet
+}
+
+nodelist {
+{% for host in groups['gfs'] %}
+  node {
+    ring0_addr: {{ hostvars[host].cluster_ip }}
+    name: {{ host }}
+    nodeid: {{ loop.index }}
+  }
+{% endfor %}
+}
+
+quorum {
+  provider: corosync_votequorum
+}
+
+logging {
+  to_syslog: yes
+}

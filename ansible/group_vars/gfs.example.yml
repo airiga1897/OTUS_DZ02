@@ -1,0 +1,5 @@
+---
+# Получить из `multipath -ll` после подключения обоих порталов.
+otus_lun_wwid: "REPLACE_WITH_VERIFIED_WWID"
+otus_connect_iscsi: true
+otus_initialize_gfs: false

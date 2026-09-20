@@ -1,0 +1,4 @@
+---
+otus_initialize_storage: false
+otus_raid_devices: []
+otus_target_iqn: iqn.2026-09.local.otus:dz02.storage

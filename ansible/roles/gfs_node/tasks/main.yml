@@ -1,0 +1,196 @@
+---
+- name: Установить пакеты общего хранилища и кластера
+  ansible.builtin.apt:
+    name:
+      - open-iscsi
+      - multipath-tools
+      - lvm2
+      - lvm2-lockd
+      - gfs2-utils
+      - dlm-controld
+      - corosync
+      - "linux-modules-extra-{{ ansible_kernel }}"
+    update_cache: true
+    policy_rc_d: 101
+    state: present
+  environment:
+    NEEDRESTART_MODE: l
+
+- name: Настроить multipath для проверенного WWID
+  ansible.builtin.template:
+    src: multipath.conf.j2
+    dest: /etc/multipath.conf
+    mode: '0644'
+  when: otus_lun_wwid is defined
+
+- name: Включить multipathd
+  ansible.builtin.systemd:
+    name: multipathd
+    enabled: true
+    state: started
+
+- name: Применить конфигурацию multipath
+  ansible.builtin.command: multipath -r
+  changed_when: false
+  when: otus_lun_wwid is defined
+
+- name: Обнаружить портал iSCSI A
+  ansible.builtin.command: iscsiadm -m discovery -t sendtargets -p 10.92.30.10
+  changed_when: false
+  when: otus_connect_iscsi | bool
+
+- name: Обнаружить портал iSCSI B
+  ansible.builtin.command: iscsiadm -m discovery -t sendtargets -p 10.92.40.10
+  changed_when: false
+  when: otus_connect_iscsi | bool
+
+- name: Проверить действующие iSCSI сеансы
+  ansible.builtin.command: iscsiadm -m session
+  register: otus_iscsi_sessions
+  changed_when: false
+  failed_when: false
+  when: otus_connect_iscsi | bool
+
+- name: Подключить оба портала одного target
+  ansible.builtin.command: "iscsiadm -m node -T {{ otus_target_iqn }} -p {{ item }} --login"
+  loop: [10.92.30.10, 10.92.40.10]
+  when: otus_connect_iscsi | bool and item not in otus_iscsi_sessions.stdout
+
+- name: Восстанавливать iSCSI сеансы после загрузки
+  ansible.builtin.command: "iscsiadm -m node -T {{ otus_target_iqn }} --op update -n node.startup -v automatic"
+  changed_when: false
+  when: otus_connect_iscsi | bool
+
+- name: Настроить кластерную блокировку LVM
+  ansible.builtin.lineinfile:
+    path: /etc/lvm/lvm.conf
+    regexp: '^\s*#?\s*use_lvmlockd\s*='
+    line: '    use_lvmlockd = 1'
+  notify: Обновить initramfs
+  when: otus_initialize_gfs | bool
+
+- name: Установить конфигурацию Corosync
+  ansible.builtin.template:
+    src: corosync.conf.j2
+    dest: /etc/corosync/corosync.conf
+    mode: "0644"
+  notify: Перезапустить corosync
+  when: otus_initialize_gfs | bool
+
+- name: Создать ключ Corosync на первом узле
+  ansible.builtin.command: corosync-keygen -l
+  args:
+    creates: /etc/corosync/authkey
+  run_once: true
+  delegate_to: gfs1
+  when: otus_initialize_gfs | bool
+
+- name: Прочитать ключ Corosync
+  ansible.builtin.slurp:
+    src: /etc/corosync/authkey
+  register: otus_corosync_key
+  run_once: true
+  delegate_to: gfs1
+  when: otus_initialize_gfs | bool
+
+- name: Распространить ключ Corosync
+  ansible.builtin.copy:
+    content: "{{ otus_corosync_key.content | b64decode }}"
+    dest: /etc/corosync/authkey
+    owner: root
+    group: root
+    mode: "0400"
+  notify: Перезапустить corosync
+  when: otus_initialize_gfs | bool
+
+- name: Применить конфигурацию Corosync
+  ansible.builtin.meta: flush_handlers
+  when: otus_initialize_gfs | bool
+
+- name: Запустить Corosync
+  ansible.builtin.systemd:
+    name: corosync
+    enabled: true
+    state: started
+  when: otus_initialize_gfs | bool
+
+- name: Дождаться кворума из трёх узлов
+  ansible.builtin.command: corosync-quorumtool -s
+  register: otus_quorum
+  changed_when: false
+  retries: 12
+  delay: 5
+  until:
+    - "'Nodes:            3' in otus_quorum.stdout"
+    - "'Quorate:          Yes' in otus_quorum.stdout"
+  when: otus_initialize_gfs | bool
+
+- name: Запустить DLM
+  ansible.builtin.systemd:
+    name: dlm
+    enabled: false
+    state: started
+  when: otus_initialize_gfs | bool
+
+- name: Запустить lvmlockd
+  ansible.builtin.systemd:
+    name: lvmlockd
+    enabled: false
+    state: started
+  when: otus_initialize_gfs | bool
+
+- name: Создать каталог GFS2
+  ansible.builtin.file:
+    path: "{{ otus_mountpoint }}"
+    state: directory
+    mode: "0755"
+  when: otus_initialize_gfs | bool
+
+- name: Проверить shared VG
+  ansible.builtin.command: vgs vg_gfs
+  register: otus_vg
+  changed_when: false
+  failed_when: false
+  run_once: true
+  delegate_to: gfs1
+  when: otus_initialize_gfs | bool
+
+- name: Создать shared LVM и GFS2 один раз
+  ansible.builtin.shell: |
+    set -eu
+    pvcreate {{ otus_lun_device }}
+    vgcreate --shared --locktype dlm vg_gfs {{ otus_lun_device }}
+    lvcreate -l 100%FREE -n lv_gfs vg_gfs
+    mkfs.gfs2 -O -p lock_dlm -t otus:gfs -j 3 /dev/vg_gfs/lv_gfs
+    lvchange -an vg_gfs/lv_gfs
+  args:
+    executable: /bin/bash
+  run_once: true
+  delegate_to: gfs1
+  when: otus_initialize_gfs | bool and otus_vg.rc != 0
+
+- name: Запустить блокировку shared VG
+  ansible.builtin.command: vgchange --lockstart vg_gfs
+  changed_when: false
+  when: otus_initialize_gfs | bool
+
+- name: Активировать общий LV
+  ansible.builtin.command: lvchange -asy vg_gfs/lv_gfs
+  changed_when: false
+  when: otus_initialize_gfs | bool
+
+- name: Проверить точку монтирования
+  ansible.builtin.command: "mountpoint -q {{ otus_mountpoint }}"
+  register: otus_mount
+  changed_when: false
+  failed_when: false
+  when: otus_initialize_gfs | bool
+
+- name: Загрузить модуль ядра GFS2
+  ansible.builtin.command: modprobe gfs2
+  changed_when: false
+  when: otus_initialize_gfs | bool
+
+- name: Смонтировать GFS2
+  ansible.builtin.command: "mount -t gfs2 -o noatime /dev/vg_gfs/lv_gfs {{ otus_mountpoint }}"
+  when: otus_initialize_gfs | bool and otus_mount.rc != 0

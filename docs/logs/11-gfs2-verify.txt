@@ -1,0 +1,51 @@
+Warning: Permanently added '89.169.142.50' (ED25519) to the list of known hosts.
+
+PLAY [Проверить совместную работу GFS2] ****************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [gfs1]
+ok: [gfs3]
+ok: [gfs2]
+
+TASK [Проверить монтирование] **************************************************
+ok: [gfs3]
+ok: [gfs1]
+ok: [gfs2]
+
+TASK [Записать файл текущего узла] *********************************************
+changed: [gfs1]
+changed: [gfs2]
+changed: [gfs3]
+
+TASK [Прочитать файлы всех узлов] **********************************************
+ok: [gfs3]
+ok: [gfs1]
+ok: [gfs2]
+
+TASK [Показать результат] ******************************************************
+ok: [gfs1] => {
+    "otus_shared_files.stdout_lines": [
+        "Файл создан на gfs1",
+        "Файл создан на gfs2",
+        "Файл создан на gfs3"
+    ]
+}
+ok: [gfs2] => {
+    "otus_shared_files.stdout_lines": [
+        "Файл создан на gfs1",
+        "Файл создан на gfs2",
+        "Файл создан на gfs3"
+    ]
+}
+ok: [gfs3] => {
+    "otus_shared_files.stdout_lines": [
+        "Файл создан на gfs1",
+        "Файл создан на gfs2",
+        "Файл создан на gfs3"
+    ]
+}
+
+PLAY RECAP *********************************************************************
+gfs1                       : ok=5    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+gfs2                       : ok=5    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+gfs3                       : ok=5    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0

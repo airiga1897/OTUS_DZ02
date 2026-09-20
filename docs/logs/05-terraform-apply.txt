@@ -1,0 +1,83 @@
+yandex_vpc_network.lab: Creating...
+yandex_compute_disk.raid["raid1"]: Creating...
+yandex_compute_disk.raid["raid2"]: Creating...
+yandex_vpc_network.lab: Creation complete after 2s [id=<resource-id>]
+yandex_vpc_subnet.lab["iscsi_a"]: Creating...
+yandex_vpc_subnet.lab["management"]: Creating...
+yandex_vpc_subnet.lab["cluster"]: Creating...
+yandex_vpc_security_group.lab: Creating...
+yandex_vpc_subnet.lab["iscsi_b"]: Creating...
+yandex_vpc_subnet.lab["iscsi_a"]: Creation complete after 0s [id=<resource-id>]
+yandex_vpc_subnet.lab["management"]: Creation complete after 1s [id=<resource-id>]
+yandex_vpc_subnet.lab["cluster"]: Creation complete after 1s [id=<resource-id>]
+yandex_vpc_security_group.lab: Creation complete after 1s [id=<resource-id>]
+yandex_vpc_subnet.lab["iscsi_b"]: Creation complete after 2s [id=<resource-id>]
+yandex_compute_disk.raid["raid2"]: Still creating... [00m10s elapsed]
+yandex_compute_disk.raid["raid1"]: Still creating... [00m10s elapsed]
+yandex_compute_disk.raid["raid1"]: Creation complete after 11s [id=<resource-id>]
+yandex_compute_disk.raid["raid2"]: Creation complete after 11s [id=<resource-id>]
+yandex_compute_instance.node["iscsi"]: Creating...
+yandex_compute_instance.node["gfs3"]: Creating...
+yandex_compute_instance.node["gfs2"]: Creating...
+yandex_compute_instance.node["gfs1"]: Creating...
+yandex_compute_instance.node["iscsi"]: Still creating... [00m11s elapsed]
+yandex_compute_instance.node["gfs3"]: Still creating... [00m10s elapsed]
+yandex_compute_instance.node["gfs1"]: Still creating... [00m10s elapsed]
+yandex_compute_instance.node["gfs2"]: Still creating... [00m10s elapsed]
+yandex_compute_instance.node["gfs3"]: Still creating... [00m20s elapsed]
+yandex_compute_instance.node["iscsi"]: Still creating... [00m21s elapsed]
+yandex_compute_instance.node["gfs2"]: Still creating... [00m20s elapsed]
+yandex_compute_instance.node["gfs1"]: Still creating... [00m20s elapsed]
+yandex_compute_instance.node["gfs3"]: Still creating... [00m30s elapsed]
+yandex_compute_instance.node["iscsi"]: Still creating... [00m31s elapsed]
+yandex_compute_instance.node["gfs2"]: Still creating... [00m30s elapsed]
+yandex_compute_instance.node["gfs1"]: Still creating... [00m30s elapsed]
+yandex_compute_instance.node["iscsi"]: Still creating... [00m41s elapsed]
+yandex_compute_instance.node["gfs3"]: Still creating... [00m40s elapsed]
+yandex_compute_instance.node["gfs2"]: Still creating... [00m40s elapsed]
+yandex_compute_instance.node["gfs1"]: Still creating... [00m40s elapsed]
+yandex_compute_instance.node["gfs2"]: Creation complete after 40s [id=<resource-id>]
+yandex_compute_instance.node["iscsi"]: Creation complete after 47s [id=<resource-id>]
+yandex_compute_instance.node["gfs3"]: Creation complete after 47s [id=<resource-id>]
+yandex_compute_instance.node["gfs1"]: Creation complete after 48s [id=<resource-id>]
+
+Apply complete! Resources: 12 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+private_ips = {
+  "gfs1" = {
+    "cluster" = "10.92.20.11"
+    "iscsi_a" = "10.92.30.11"
+    "iscsi_b" = "10.92.40.11"
+    "management" = "10.92.10.11"
+  }
+  "gfs2" = {
+    "cluster" = "10.92.20.12"
+    "iscsi_a" = "10.92.30.12"
+    "iscsi_b" = "10.92.40.12"
+    "management" = "10.92.10.12"
+  }
+  "gfs3" = {
+    "cluster" = "10.92.20.13"
+    "iscsi_a" = "10.92.30.13"
+    "iscsi_b" = "10.92.40.13"
+    "management" = "10.92.10.13"
+  }
+  "iscsi" = {
+    "cluster" = tostring(null)
+    "iscsi_a" = "10.92.30.10"
+    "iscsi_b" = "10.92.40.10"
+    "management" = "10.92.10.10"
+  }
+}
+public_ips = {
+  "gfs1" = "89.169.142.50"
+  "gfs2" = "51.250.87.39"
+  "gfs3" = "93.77.185.82"
+  "iscsi" = "93.77.184.247"
+}
+raid_disk_ids = {
+  "raid1" = "<resource-id>"
+  "raid2" = "<resource-id>"
+}

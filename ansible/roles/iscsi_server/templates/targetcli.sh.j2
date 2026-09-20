@@ -1,0 +1,12 @@
+#!/bin/sh
+set -eu
+targetcli /backstores/block ls | grep -q otus_lun || targetcli /backstores/block create name=otus_lun dev=/dev/vg_target/lv_lun
+targetcli /iscsi ls | grep -q '{{ otus_target_iqn }}' || targetcli /iscsi create {{ otus_target_iqn }}
+targetcli /iscsi/{{ otus_target_iqn }}/tpg1/luns ls | grep -q otus_lun || targetcli /iscsi/{{ otus_target_iqn }}/tpg1/luns create /backstores/block/otus_lun
+targetcli /iscsi/{{ otus_target_iqn }}/tpg1/portals ls | grep -q 0.0.0.0 && targetcli /iscsi/{{ otus_target_iqn }}/tpg1/portals delete 0.0.0.0 3260 || true
+targetcli /iscsi/{{ otus_target_iqn }}/tpg1/portals ls | grep -q 10.92.30.10 || targetcli /iscsi/{{ otus_target_iqn }}/tpg1/portals create 10.92.30.10 3260
+targetcli /iscsi/{{ otus_target_iqn }}/tpg1/portals ls | grep -q 10.92.40.10 || targetcli /iscsi/{{ otus_target_iqn }}/tpg1/portals create 10.92.40.10 3260
+targetcli /iscsi/{{ otus_target_iqn }}/tpg1 set attribute authentication=0
+targetcli /iscsi/{{ otus_target_iqn }}/tpg1 set attribute generate_node_acls=1
+targetcli /iscsi/{{ otus_target_iqn }}/tpg1 set attribute demo_mode_write_protect=0
+targetcli saveconfig

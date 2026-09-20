@@ -1,0 +1,6 @@
+---
+otus_target_iqn: iqn.2026-09.local.otus:dz02.storage
+otus_connect_iscsi: false
+otus_initialize_gfs: false
+otus_lun_device: /dev/mapper/otus_lun
+otus_mountpoint: /srv/gfs2

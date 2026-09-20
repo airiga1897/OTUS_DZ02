@@ -1,0 +1,107 @@
+---
+- name: Установить пакеты сервера
+  ansible.builtin.apt:
+    name: [mdadm, lvm2, targetcli-fb]
+    update_cache: true
+    state: present
+
+- name: Проверить точный набор дисков RAID
+  ansible.builtin.assert:
+    that:
+      - otus_raid_devices | length == 2
+      - otus_raid_devices | unique | length == 2
+    fail_msg: "Укажите два проверенных /dev/disk/by-id/... для RAID1"
+  when: otus_initialize_storage | bool
+
+- name: Проверить существующий массив
+  ansible.builtin.command: mdadm --detail /dev/md/otus
+  register: otus_existing_array
+  changed_when: false
+  failed_when: false
+  when: otus_initialize_storage | bool
+
+- name: Остановиться при несовместимом существующем массиве
+  ansible.builtin.assert:
+    that:
+      - "'Raid Level : raid1' in otus_existing_array.stdout"
+      - "'Raid Devices : 2' in otus_existing_array.stdout"
+      - "'Spare Devices : 0' in otus_existing_array.stdout"
+    fail_msg: "Существующий массив не соответствует RAID1 из двух дисков; требуется ручное обследование"
+  when: otus_initialize_storage | bool and otus_existing_array.rc == 0
+
+- name: Проверить метаданные первого диска перед созданием массива
+  ansible.builtin.command: "mdadm --examine {{ otus_raid_devices[0] }}"
+  register: otus_first_member
+  changed_when: false
+  failed_when: false
+  when: otus_initialize_storage | bool and otus_existing_array.rc != 0
+
+- name: Проверить метаданные второго диска перед созданием массива
+  ansible.builtin.command: "mdadm --examine {{ otus_raid_devices[1] }}"
+  register: otus_second_member
+  changed_when: false
+  failed_when: false
+  when: otus_initialize_storage | bool and otus_existing_array.rc != 0
+
+- name: Остановиться, если на дисках найден прежний массив
+  ansible.builtin.assert:
+    that:
+      - otus_first_member.rc != 0
+      - otus_second_member.rc != 0
+    fail_msg: "На дисках уже есть метаданные mdadm; сначала обследуйте и соберите массив вручную"
+  when: otus_initialize_storage | bool and otus_existing_array.rc != 0
+
+- name: Проверить другие сигнатуры на дисках
+  ansible.builtin.command: "wipefs --no-act --noheadings --output TYPE {{ item }}"
+  loop: "{{ otus_raid_devices }}"
+  register: otus_member_signatures
+  changed_when: false
+  when: otus_initialize_storage | bool and otus_existing_array.rc != 0
+
+- name: Остановиться при существующей разметке или файловой системе
+  ansible.builtin.assert:
+    that:
+      - "otus_member_signatures.results | map(attribute='stdout') | map('trim') | reject('equalto', '') | list | length == 0"
+    fail_msg: "На одном из дисков есть сигнатура; требуется ручное обследование"
+  when: otus_initialize_storage | bool and otus_existing_array.rc != 0
+
+- name: Создать RAID1 из двух активных дисков
+  ansible.builtin.command:
+    argv: "{{ ['mdadm', '--create', '/dev/md/otus', '--level=1', '--raid-devices=2'] + otus_raid_devices }}"
+    creates: /dev/md/otus
+    stdin: "y\n"
+  when: otus_initialize_storage | bool and otus_existing_array.rc != 0
+
+- name: Проверить существующий PV
+  ansible.builtin.command: pvs --noheadings -o pv_name /dev/md/otus
+  register: otus_pv
+  changed_when: false
+  failed_when: false
+  when: otus_initialize_storage | bool
+
+- name: Создать PV на RAID
+  ansible.builtin.command: pvcreate /dev/md/otus
+  when: otus_initialize_storage | bool and otus_pv.rc != 0
+
+- name: Создать VG
+  ansible.builtin.command: vgcreate vg_target /dev/md/otus
+  when: otus_initialize_storage | bool
+  args:
+    creates: /dev/vg_target
+
+- name: Создать LV для общего LUN
+  ansible.builtin.command: lvcreate -l 100%FREE -n lv_lun vg_target
+  when: otus_initialize_storage | bool
+  args:
+    creates: /dev/vg_target/lv_lun
+
+- name: Разрешить форвардинг iSCSI target
+  ansible.builtin.template:
+    src: targetcli.sh.j2
+    dest: /root/otus-targetcli.sh
+    mode: '0700'
+  when: otus_initialize_storage | bool
+
+- name: Настроить один LUN через два портала
+  ansible.builtin.command: /root/otus-targetcli.sh
+  when: otus_initialize_storage | bool
